@@ -1,0 +1,6 @@
+{
+  "name": "ব্লাড ডোনেশন সোসাইটি, নীলফামারী",
+  "description": "ব্লাড ডোনেশন সোসাইটি, নীলফামারী — মানবতার সেবায় নিবেদিত রক্তদান ও স্বাস্থ্যসেবা প্ল্যাটফর্ম।",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
