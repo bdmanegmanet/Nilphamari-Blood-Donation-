@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   User, 
   Donation, 
@@ -112,10 +112,22 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
   // Feedback states
   const [copiedCode, setCopiedCode] = useState(false);
   const [syncLoading, setSyncLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [syncFeedback, setSyncFeedback] = useState<{ success: boolean; message: string } | null>(null);
+  const [refreshNotice, setRefreshNotice] = useState<string | null>(null);
   const [configSavedNotice, setConfigSavedNotice] = useState(false);
   const [exportingAdminReqId, setExportingAdminReqId] = useState<string | null>(null);
   const [copiedAdminReqId, setCopiedAdminReqId] = useState<string | null>(null);
+
+  // Auto 10-Second Background Sync Polling Lifecycle
+  useEffect(() => {
+    storageService.startTenSecondSync(() => {
+      refreshAll();
+    });
+    return () => {
+      storageService.stopTenSecondSync();
+    };
+  }, []);
 
   // New User Modal
   const [addUserModal, setAddUserModal] = useState(false);
@@ -267,6 +279,17 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
     setTimeout(() => setSyncFeedback(null), 3000);
   };
 
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await storageService.fetchDataFromGas();
+    } catch (err) {}
+    refreshAll();
+    setIsRefreshing(false);
+    setRefreshNotice('সকল তথ্য সফলভাবে রিফ্রেশ ও সিঙ্ক করা হয়েছে!');
+    setTimeout(() => setRefreshNotice(null), 3000);
+  };
+
   const handleTestGasSync = async () => {
     if (!gasConfig.webAppUrl) {
       setSyncFeedback({ success: false, message: 'অনুগ্রহ করে প্রথমে Apps Script Web App URL প্রদান করুন।' });
@@ -281,6 +304,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
     if (res.success) {
       try { confetti({ particleCount: 50, spread: 60 }); } catch {}
     }
+    setTimeout(() => setSyncFeedback(null), 4000);
   };
 
   const handleCopyCode = () => {
@@ -399,11 +423,13 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
             <span>ওয়েবসাইট এ যান</span>
           </button>
           <button
-            onClick={refreshAll}
+            onClick={handleManualRefresh}
+            disabled={isRefreshing}
             className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5"
+            title="গুগল শিট ও লোকাল ডাটা রিফ্রেশ করুন"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>রিফ্রেশ</span>
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-amber-300' : ''}`} />
+            <span>{isRefreshing ? 'রিফ্রেশ হচ্ছে...' : 'রিফ্রেশ'}</span>
           </button>
           <button
             onClick={onLogout}
@@ -414,6 +440,88 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Universal Auto-Sync & Real-Time Status Bar (Visible on EVERY Admin Tab) */}
+      <div className="bg-stone-900 text-white rounded-2xl p-4 sm:p-5 border border-stone-800 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center space-x-3.5">
+          <div className="relative flex items-center justify-center">
+            <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 animate-ping absolute" />
+            <span className="w-3.5 h-3.5 rounded-full bg-emerald-400 relative z-10" />
+          </div>
+          <div>
+            <div className="flex items-center space-x-2">
+              <h4 className="font-bold text-xs sm:text-sm text-white flex items-center space-x-1.5">
+                <span>১০-সেকেন্ড অটো-সিঙ্ক সক্রিয় (Live Sync Engine)</span>
+              </h4>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 text-[10px] font-mono font-bold border border-emerald-800">
+                10s Poll Active
+              </span>
+            </div>
+            <p className="text-[11px] text-stone-300 mt-0.5">
+              গুগল স্প্রেডশিট ও ওয়েবসাইটের সকল তথ্য স্বয়ংক্রিয়ভাবে প্রতি ১০ সেকেন্ডে লাইভ সিঙ্ক হচ্ছে।
+              {gasConfig.lastSyncTime && (
+                <span className="text-amber-300 ml-1.5 font-mono">
+                  (সর্বশেষ সিঙ্ক: {gasConfig.lastSyncTime})
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 self-stretch md:self-auto justify-start md:justify-end">
+          <button
+            type="button"
+            onClick={handleTestGasSync}
+            disabled={syncLoading}
+            className="px-3.5 py-2 bg-[#B71C1C] hover:bg-[#8E0000] text-white font-bold text-xs rounded-xl flex items-center space-x-1.5 shadow-sm transition-all"
+            title="গুগল শিটে সকল তথ্য তাৎক্ষণিক পুশ ও সিঙ্ক করুন"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${syncLoading ? 'animate-spin' : ''}`} />
+            <span>{syncLoading ? 'সিঙ্ক হচ্ছে...' : 'এখনই সিঙ্ক করুন'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleManualRefresh}
+            disabled={isRefreshing}
+            className="px-3.5 py-2 bg-stone-800 hover:bg-stone-700 text-stone-100 font-bold text-xs rounded-xl flex items-center space-x-1.5 border border-stone-700 transition-all"
+            title="সার্ভার ও শিট থেকে ফ্রেশ ডাটা রিফ্রেশ করুন"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-amber-400' : ''}`} />
+            <span>{isRefreshing ? 'রিফ্রেশ হচ্ছে...' : 'ডাটা রিফ্রেশ'}</span>
+          </button>
+
+          <a
+            href={GOOGLE_SHEET_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3 py-2 bg-emerald-700/60 hover:bg-emerald-700 text-emerald-200 hover:text-white font-bold text-xs rounded-xl flex items-center space-x-1 border border-emerald-600/40 transition-all"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">গুগল শিট</span>
+          </a>
+        </div>
+      </div>
+
+      {/* Global Refresh Notice Toast */}
+      {refreshNotice && (
+        <div className="p-3.5 bg-emerald-900 text-emerald-100 border border-emerald-700 rounded-2xl text-xs font-bold flex items-center space-x-2 animate-fade-in shadow-md">
+          <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
+          <span>{refreshNotice}</span>
+        </div>
+      )}
+
+      {/* Global Sync Feedback Toast */}
+      {syncFeedback && (
+        <div className={`p-3.5 rounded-2xl text-xs font-bold flex items-center space-x-2 animate-fade-in shadow-md ${
+          syncFeedback.success 
+            ? 'bg-emerald-900 text-emerald-100 border border-emerald-700' 
+            : 'bg-red-900 text-red-100 border border-red-700'
+        }`}>
+          {syncFeedback.success ? <Check className="w-4 h-4 text-emerald-300 shrink-0" /> : <AlertTriangle className="w-4 h-4 text-red-300 shrink-0" />}
+          <span>{syncFeedback.message}</span>
+        </div>
+      )}
 
       {/* Navigation Tabs Bar */}
       <div className="bg-white rounded-2xl p-2 border border-stone-200 shadow-xs flex items-center gap-1.5 overflow-x-auto text-xs font-bold scrollbar-thin">

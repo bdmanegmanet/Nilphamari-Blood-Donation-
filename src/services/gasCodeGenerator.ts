@@ -1,8 +1,11 @@
 /**
- * Google Apps Script Backend Code Generator
- * This provides the full Code.gs code for Google Sheets two-way synchronization
- * and webhooks handling. Includes getsheets, setupsheet, and setupheadr functions.
- * Fixed Google Spreadsheet ID & Direct Link configured.
+ * Google Apps Script Backend Code Generator (Clean, Single-Setup, Unified API)
+ * This provides the full Code.gs for Google Sheets two-way synchronization
+ * and webhooks handling.
+ * 
+ * Target Google Spreadsheet:
+ * https://docs.google.com/spreadsheets/d/15YbYI9ePTs2JtvvzhENv5ZelMIIf-OFQe3QAmuSfMJc/edit?usp=drivesdk
+ * ID: 15YbYI9ePTs2JtvvzhENv5ZelMIIf-OFQe3QAmuSfMJc
  */
 
 export const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/15YbYI9ePTs2JtvvzhENv5ZelMIIf-OFQe3QAmuSfMJc/edit?usp=drivesdk';
@@ -11,79 +14,66 @@ export const DEFAULT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwDn
 
 export const GOOGLE_APPS_SCRIPT_CODE = `/**
  * =========================================================================
- *  লাইফসেভার ব্লাড ব্যাংক - Google Apps Script (Code.gs)
- *  Blood Bank Management System Backend API & Google Sheets Connector
+ *  ব্লাড ডোনেশন সোসাইটি, নীলফামারী - Google Apps Script (Code.gs)
+ *  Backend REST API & Automated Google Sheets Central Database Hub
  * =========================================================================
  * 
  *  🔗 ফিক্সড গুগল স্প্রেডশিট লিংক (Target Google Spreadsheet):
  *  https://docs.google.com/spreadsheets/d/15YbYI9ePTs2JtvvzhENv5ZelMIIf-OFQe3QAmuSfMJc/edit?usp=drivesdk
  *  Spreadsheet ID: 15YbYI9ePTs2JtvvzhENv5ZelMIIf-OFQe3QAmuSfMJc
  * 
- *  🌐 ফিক্সড ওয়েব অ্যাপ ইউআরএল (Web App URL):
- *  https://script.google.com/macros/s/AKfycbwDnrXeZYxFz-R0pAi03O32uGoAqs39q3uu90UIRBbxHYFYKiafjOV--bk71Qyp7bIAxg/exec
- * 
- *  📋 নির্দেশিকা (Instructions):
+ *  📋 সেটআপ নির্দেশিকা (Setup Instructions):
  *  ১. https://script.google.com এ যান অথবা উল্লেখিত স্প্রেডশিটের Extensions > Apps Script এ যান।
- *  ২. এই সম্পূর্ণ কোডটি Code.gs এ পেস্ট করে সংরক্ষণ করুন (Ctrl + S)।
- *  ৩. উপরের ফাংশন ড্রপডাউন থেকে 'initialSetup()' অথবা 'setupsheet()' রান করে প্রয়োজনীয় সকল শিট ও হেডার তৈরি করুন।
- *  ৪. 'Deploy' -> 'Manage Deployments' -> Edit (অথবা New Deployment) -> Web App নির্বাচন করে 'Deploy' করুন।
+ *  ২. সম্পূর্ণ কোডটি Code.gs ফাইলে পেস্ট করে সংরক্ষণ করুন (Ctrl + S)।
+ *  ৩. উপরের ফাংশন ড্রপডাউন থেকে 'setupSheets' (অথবা 'initialSetup') নির্বাচন করে 'Run' বাটনে ক্লিক করুন।
+ *     -> এটি স্বয়ংক্রিয়ভাবে সকল শিট ও প্রফেশনাল হেডার তৈরি করবে।
+ *  ৪. 'Deploy' > 'New deployment' (অথবা Manage deployments) > 'Web app' হিসেবে ডিপ্লয় করুন:
+ *     - Execute as: Me (আপনার গুগল একাউন্ট)
+ *     - Who has access: Anyone (যেকোনো ব্যক্তি)
+ *  ৫. প্রাপ্ত Web App URL টি ওয়েবসাইটের অ্যাডমিন ড্যাশবোর্ডে সংরক্ষণ করুন।
  */
 
-// ফিক্সড স্প্রেডশিট আইডি (Fixed Google Spreadsheet ID)
+// ফিক্সড স্প্রেডশিট আইডি
 var SPREADSHEET_ID = '15YbYI9ePTs2JtvvzhENv5ZelMIIf-OFQe3QAmuSfMJc';
 var SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/15YbYI9ePTs2JtvvzhENv5ZelMIIf-OFQe3QAmuSfMJc/edit?usp=drivesdk';
-var WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwDnrXeZYxFz-R0pAi03O32uGoAqs39q3uu90UIRBbxHYFYKiafjOV--bk71Qyp7bIAxg/exec';
 
-// শিটের নামসমূহ (Sheet Names Constant)
+// শিটসমূহের নাম
 var SHEETS = {
   USERS: 'Users',
   REQUESTS: 'Requests',
   BLOOD_STOCK: 'BloodStock',
-  DONATIONS: 'Donations',
   APPLICATIONS: 'Applications',
-  MESSAGES: 'Messages',
   NOTICES: 'Notices',
   ARTICLES: 'Articles',
   SLIDERS: 'Sliders',
+  GALLERY: 'Gallery',
+  MESSAGES: 'Messages',
   SITE_CONFIG: 'SiteConfig',
   ACTIVITY_LOG: 'ActivityLog'
 };
 
 /**
- * স্প্রেডশিট অবজেক্ট পাওয়ার নিরাপদ হেল্পার
+ * স্প্রেডশিট রেফারেন্স পাওয়ার নিরাপদ ফাংশন
  */
-function getTargetSpreadsheet() {
+function getSpreadsheet() {
   try {
     if (SPREADSHEET_ID && SPREADSHEET_ID.trim() !== '') {
       return SpreadsheetApp.openById(SPREADSHEET_ID);
     }
   } catch (e) {
-    Logger.log('openById error, falling back to active sheet: ' + e.toString());
+    Logger.log('Spreadsheet openById notice: ' + e.toString());
   }
-  return SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openById('15YbYI9ePTs2JtvvzhENv5ZelMIIf-OFQe3QAmuSfMJc');
+  try {
+    var active = SpreadsheetApp.getActiveSpreadsheet();
+    if (active) return active;
+  } catch (e) {}
+  return SpreadsheetApp.openById('15YbYI9ePTs2JtvvzhENv5ZelMIIf-OFQe3QAmuSfMJc');
 }
 
 /**
- * ১. getsheets() - সকল শিটের ম্যাপ পাওয়া
+ * শিটের হেডার স্টাইলিং ও ফরম্যাটিং
  */
-function getsheets() {
-  var ss = getTargetSpreadsheet();
-  var allSheets = ss.getSheets();
-  var sheetMap = {};
-  for (var i = 0; i < allSheets.length; i++) {
-    sheetMap[allSheets[i].getName()] = allSheets[i];
-  }
-  return sheetMap;
-}
-
-function getSheets() {
-  return getsheets();
-}
-
-/**
- * ২. setupheadr() - শিটের প্রথম রো (Header) প্রফেশনাল স্টাইলিং
- */
-function setupheadr(sheet, headers, bgColor, fontColor) {
+function formatHeader(sheet, headers, bgColor, fontColor) {
   if (!sheet) return;
   var bg = bgColor || '#8B0000';
   var fg = fontColor || '#FFFFFF';
@@ -106,174 +96,213 @@ function setupheadr(sheet, headers, bgColor, fontColor) {
     headerRange.setHorizontalAlignment('center');
     headerRange.setVerticalAlignment('middle');
     try {
-      sheet.setRowHeight(1, 35);
+      sheet.setRowHeight(1, 36);
       sheet.setFrozenRows(1);
-    } catch(err){}
+    } catch (e) {}
   }
 }
 
-function setupHeader(sheet, headers, bgColor, fontColor) {
-  return setupheadr(sheet, headers, bgColor, fontColor);
-}
-
 /**
- * ৩. setupsheet() - নির্দিষ্ট শিট তৈরি ও সেটআপ
+ * একক শিট তৈরি ও সেটআপ হেল্পার
  */
-function setupsheet(sheetName, headers, defaultRows, headerBg) {
-  var ss = getTargetSpreadsheet();
+function setupSingleSheet(sheetName, headers, defaultRows, headerBg) {
+  var ss = getSpreadsheet();
   var sheet = ss.getSheetByName(sheetName);
 
   if (!sheet) {
     sheet = ss.insertSheet(sheetName);
   }
 
-  if (sheet.getLastRow() === 0 && headers && headers.length > 0) {
-    sheet.appendRow(headers);
+  if (sheet.getLastRow() === 0) {
+    if (headers && headers.length > 0) {
+      sheet.appendRow(headers);
+    }
     if (defaultRows && Array.isArray(defaultRows) && defaultRows.length > 0) {
-      for (var r = 0; r < defaultRows.length; r++) {
-        sheet.appendRow(defaultRows[r]);
+      for (var i = 0; i < defaultRows.length; i++) {
+        sheet.appendRow(defaultRows[i]);
       }
     }
   }
 
-  setupheadr(sheet, headers, headerBg);
+  formatHeader(sheet, headers, headerBg);
   return sheet;
 }
 
-function setupSheet(sheetName, headers, defaultRows, headerBg) {
-  return setupsheet(sheetName, headers, defaultRows, headerBg);
-}
-
 /**
- * ৪. initialSetup() - এক ক্লিকে সম্পূর্ণ ডাটাবেজ আর্কিটেকচার সেটআপ
+ * =========================================================================
+ * প্রধান সেটআপ ফাংশন (Run this function once to create all sheets & headers)
+ * =========================================================================
  */
-function initialSetup() {
-  var ss = getTargetSpreadsheet();
-  Logger.log('🚀 ইনিশিয়াল সেটআপ শুরু হয়েছে: ' + ss.getName());
+function setupSheets() {
+  var ss = getSpreadsheet();
+  Logger.log('🚀 গুগল স্প্রেডশিট সেটআপ শুরু হচ্ছে: ' + ss.getName());
 
-  // ১. Users (with Avatar / Base64 Data)
-  setupsheet(
+  // ১. Users Sheet
+  setupSingleSheet(
     SHEETS.USERS,
-    ['ID', 'Name', 'Email', 'PasswordHash', 'Phone', 'BloodGroup', 'DOB', 'Address', 'District', 'AvatarUrl', 'LastDonation', 'Role', 'Status', 'IsAvailable', 'TotalDonations', 'CreatedAt'],
+    ['ID', 'Name', 'Email', 'PasswordHash', 'Phone', 'BloodGroup', 'DOB', 'District', 'Address', 'AvatarUrl', 'LastDonation', 'Role', 'Status', 'IsAvailable', 'TotalDonations', 'CreatedAt'],
     [],
     '#8B0000'
   );
 
-  // ২. Requests
-  setupsheet(
+  // ২. Requests Sheet
+  setupSingleSheet(
     SHEETS.REQUESTS,
     ['ID', 'RequesterName', 'Contact', 'AlternateContact', 'BloodGroup', 'Hospital', 'District', 'Urgency', 'UnitsNeeded', 'Status', 'PatientProblem', 'DateNeeded', 'AdminNote', 'CreatedAt'],
     [],
     '#B71C1C'
   );
 
-  // ৩. BloodStock
-  var defaultStockRows = [
-    ['A+', 15, 5, new Date().toLocaleString('bn-BD')],
-    ['A-', 8, 3, new Date().toLocaleString('bn-BD')],
-    ['B+', 20, 5, new Date().toLocaleString('bn-BD')],
-    ['B-', 6, 3, new Date().toLocaleString('bn-BD')],
-    ['AB+', 10, 4, new Date().toLocaleString('bn-BD')],
+  // ৩. BloodStock Sheet
+  var defaultStock = [
+    ['A+', 12, 4, new Date().toLocaleString('bn-BD')],
+    ['A-', 6, 2, new Date().toLocaleString('bn-BD')],
+    ['B+', 18, 5, new Date().toLocaleString('bn-BD')],
+    ['B-', 5, 2, new Date().toLocaleString('bn-BD')],
+    ['AB+', 8, 3, new Date().toLocaleString('bn-BD')],
     ['AB-', 4, 2, new Date().toLocaleString('bn-BD')],
-    ['O+', 25, 5, new Date().toLocaleString('bn-BD')],
-    ['O-', 7, 3, new Date().toLocaleString('bn-BD')]
+    ['O+', 22, 5, new Date().toLocaleString('bn-BD')],
+    ['O-', 6, 3, new Date().toLocaleString('bn-BD')]
   ];
-  setupsheet(
+  setupSingleSheet(
     SHEETS.BLOOD_STOCK,
     ['BloodGroup', 'UnitCount', 'MinimumThreshold', 'LastUpdated'],
-    defaultStockRows,
+    defaultStock,
     '#1E3A8A'
   );
 
-  // ৪. Applications
-  setupsheet(
+  // ৪. Applications Sheet
+  setupSingleSheet(
     SHEETS.APPLICATIONS,
-    ['ID', 'Type', 'ApplicantName', 'Email', 'Phone', 'Address', 'District', 'BloodGroup', 'Status', 'Details', 'CreatedAt'],
+    ['ID', 'Type', 'ApplicantName', 'Email', 'Phone', 'District', 'Address', 'BloodGroup', 'Status', 'Details', 'CreatedAt'],
     [],
     '#4C1D95'
   );
 
-  // ৫. Messages
-  setupsheet(
+  // ৫. Notices Sheet
+  setupSingleSheet(
+    SHEETS.NOTICES,
+    ['ID', 'Title', 'Category', 'CategoryLabel', 'Content', 'Date', 'PublishedBy', 'IsPinned', 'ExternalUrl', 'ExternalUrlText', 'CreatedAt'],
+    [],
+    '#D97706'
+  );
+
+  // ৬. Articles Sheet
+  setupSingleSheet(
+    SHEETS.ARTICLES,
+    ['ID', 'Title', 'Category', 'Excerpt', 'Content', 'Author', 'AuthorRole', 'ImageUrl', 'YoutubeUrl', 'Date', 'ReadTime', 'Tags', 'ViewsCount', 'CreatedAt'],
+    [],
+    '#059669'
+  );
+
+  // ৭. Sliders Sheet
+  setupSingleSheet(
+    SHEETS.SLIDERS,
+    ['ID', 'Title', 'Subtitle', 'Badge', 'ImageUrl', 'LinkPage', 'LinkText', 'Order', 'IsActive'],
+    [],
+    '#2563EB'
+  );
+
+  // ৮. Gallery Sheet
+  setupSingleSheet(
+    SHEETS.GALLERY,
+    ['ID', 'Title', 'Category', 'ImageUrl', 'Date', 'Upazila', 'Description', 'CreatedAt'],
+    [],
+    '#7C3AED'
+  );
+
+  // ৯. Messages Sheet
+  setupSingleSheet(
     SHEETS.MESSAGES,
     ['ID', 'Name', 'Email', 'Phone', 'Subject', 'Message', 'Status', 'CreatedAt'],
     [],
     '#047857'
   );
 
-  // ৬. ActivityLog
-  setupsheet(
+  // ১০. SiteConfig Sheet
+  setupSingleSheet(
+    SHEETS.SITE_CONFIG,
+    ['Key', 'Value', 'LastUpdated'],
+    [
+      ['siteName', 'ব্লাড ডোনেশন সোসাইটি, নীলফামারী', new Date().toISOString()],
+      ['siteSlogan', 'এক ফোঁটা রক্ত, একটি জীবন • মানবতার সেবায় নিবেদিত', new Date().toISOString()],
+      ['emergencyPhone', '+8801711000001', new Date().toISOString()],
+      ['spreadsheetUrl', SPREADSHEET_URL, new Date().toISOString()]
+    ],
+    '#0F172A'
+  );
+
+  // ১১. ActivityLog Sheet
+  setupSingleSheet(
     SHEETS.ACTIVITY_LOG,
     ['ID', 'UserID', 'UserName', 'Action', 'Details', 'Timestamp', 'IP'],
     [],
     '#374151'
   );
 
-  // ৭. SiteConfig
-  setupsheet(
-    SHEETS.SITE_CONFIG,
-    ['Key', 'Value', 'LastUpdated'],
-    [
-      ['siteName', 'লাইফসেভার ব্লাড ব্যাংক', new Date().toISOString()],
-      ['siteSlogan', 'জীবন বাঁচান, রক্ত দিন • নীলফামারী জেলা শাখা', new Date().toISOString()],
-      ['emergencyPhone', '+8801711000001', new Date().toISOString()],
-      ['webAppUrl', WEB_APP_URL, new Date().toISOString()],
-      ['spreadsheetUrl', SPREADSHEET_URL, new Date().toISOString()]
-    ],
-    '#0F172A'
-  );
-
-  Logger.log('🎉 সকল শিট সফলভাবে প্রস্তুত হয়েছে!');
+  Logger.log('🎉 সকল শিট ও হেডার সফলভাবে প্রস্তুত হয়েছে!');
   return {
     success: true,
     spreadsheetUrl: SPREADSHEET_URL,
-    webAppUrl: WEB_APP_URL,
-    message: 'Google Sheets ডাটাবেজ ও হেডার আর্কিটেকচার সফলভাবে প্রস্তুত হয়েছে!'
+    message: 'ব্লাড ডোনেশন সোসাইটি - গুগল স্প্রেডশিট ডাটাবেজ সফলভাবে সেটআপ হয়েছে।'
   };
 }
 
+// ফাংশন এলিয়াস (যাতে যেকোনো নামে রান করলেও একই সেটআপ কাজ করে)
+function initialSetup() {
+  return setupSheets();
+}
+function setupsheet() {
+  return setupSheets();
+}
+
 /**
- * শিট থেকে অবজেক্ট অ্যারে রিড করা
+ * শিট থেকে সব ডাটা অবজেক্ট অ্যারে হিসেবে পড়া (Self-Healing)
  */
-function getRowsAsObjects(sheetName) {
+function readSheetRows(sheetName) {
   try {
-    var ss = getTargetSpreadsheet();
+    var ss = getSpreadsheet();
     var sheet = ss.getSheetByName(sheetName);
-    if (!sheet) return [];
+    if (!sheet) {
+      setupSheets();
+      sheet = ss.getSheetByName(sheetName);
+      if (!sheet) return [];
+    }
 
     var data = sheet.getDataRange().getValues();
     if (!data || data.length <= 1) return [];
 
     var headers = data[0];
-    var rows = [];
+    var results = [];
 
     for (var i = 1; i < data.length; i++) {
       var row = data[i];
-      var obj = {};
-      var hasData = false;
+      var item = {};
+      var hasValue = false;
       for (var j = 0; j < headers.length; j++) {
-        obj[headers[j]] = row[j];
+        var key = headers[j];
+        item[key] = row[j];
         if (row[j] !== '' && row[j] !== null && row[j] !== undefined) {
-          hasData = true;
+          hasValue = true;
         }
       }
-      if (hasData) {
-        rows.push(obj);
+      if (hasValue) {
+        results.push(item);
       }
     }
-    return rows;
-  } catch (e) {
-    Logger.log('getRowsAsObjects error in ' + sheetName + ': ' + e.toString());
+    return results;
+  } catch (err) {
+    Logger.log('readSheetRows error in ' + sheetName + ': ' + err.toString());
     return [];
   }
 }
 
 /**
- * শিট সম্পূর্ণ ওভাররাইট করার হেল্পার
+ * শিটের সম্পূর্ণ ডাটা ওভাররাইট করা (Web to Sheet Sync)
  */
-function overwriteSheet(sheetName, headers, rows, headerBg) {
+function overwriteSheetData(sheetName, headers, rows, headerBg) {
   try {
-    var ss = getTargetSpreadsheet();
+    var ss = getSpreadsheet();
     var sheet = ss.getSheetByName(sheetName);
     if (!sheet) {
       sheet = ss.insertSheet(sheetName);
@@ -284,104 +313,123 @@ function overwriteSheet(sheetName, headers, rows, headerBg) {
     if (headers && headers.length > 0) {
       sheet.appendRow(headers);
     }
-    if (rows && rows.length > 0) {
+    if (rows && Array.isArray(rows) && rows.length > 0) {
       sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
     }
 
-    setupheadr(sheet, headers, headerBg);
-  } catch(e) {
-    Logger.log('overwriteSheet error in ' + sheetName + ': ' + e.toString());
+    formatHeader(sheet, headers, headerBg);
+  } catch (err) {
+    Logger.log('overwriteSheetData error in ' + sheetName + ': ' + err.toString());
   }
 }
 
 /**
- * GET রিকোয়েস্ট হ্যান্ডলার
+ * =========================================================================
+ * ১. GET রিকোয়েস্ট হ্যান্ডলার (One API Call to Fetch All Website Data)
+ * =========================================================================
  */
 function doGet(e) {
   try {
     var action = (e && e.parameter && e.parameter.action) || 'getAllData';
 
     if (action === 'ping') {
-      return jsonResponse({
+      return respondJson({
         status: 'success',
-        message: '🩸 লাইফসেভার ব্লাড ব্যাংক Google Apps Script API সচল ও প্রস্তুত!',
+        message: '🩸 ব্লাড ডোনেশন সোসাইটি Google Apps Script API সচল রয়েছে!',
         spreadsheetId: SPREADSHEET_ID,
         spreadsheetUrl: SPREADSHEET_URL,
-        webAppUrl: WEB_APP_URL,
         timestamp: new Date().toISOString()
       });
     }
 
-    if (action === 'getAllData') {
-      return jsonResponse({
+    if (action === 'setup' || action === 'setupSheets') {
+      var setupResult = setupSheets();
+      return respondJson({
         status: 'success',
-        spreadsheetId: SPREADSHEET_ID,
-        data: {
-          users: getRowsAsObjects(SHEETS.USERS),
-          requests: getRowsAsObjects(SHEETS.REQUESTS),
-          stock: getRowsAsObjects(SHEETS.BLOOD_STOCK),
-          applications: getRowsAsObjects(SHEETS.APPLICATIONS),
-          messages: getRowsAsObjects(SHEETS.MESSAGES),
-          notices: getRowsAsObjects(SHEETS.NOTICES),
-          articles: getRowsAsObjects(SHEETS.ARTICLES),
-          sliders: getRowsAsObjects(SHEETS.SLIDERS),
-          config: getRowsAsObjects(SHEETS.SITE_CONFIG),
-          logs: getRowsAsObjects(SHEETS.ACTIVITY_LOG)
-        }
+        message: 'গুগল স্প্রেডশিট শিট ও হেডার সফলভাবে সেটআপ করা হয়েছে!',
+        result: setupResult,
+        timestamp: new Date().toISOString()
       });
     }
 
-    return jsonResponse({ status: 'error', message: 'Unknown action: ' + action });
+    // ডিফল্ট: এক কলেই সমস্ত ডাটা পাঠানো
+    return respondJson({
+      status: 'success',
+      timestamp: new Date().toISOString(),
+      spreadsheetId: SPREADSHEET_ID,
+      data: {
+        users: readSheetRows(SHEETS.USERS),
+        requests: readSheetRows(SHEETS.REQUESTS),
+        stock: readSheetRows(SHEETS.BLOOD_STOCK),
+        applications: readSheetRows(SHEETS.APPLICATIONS),
+        notices: readSheetRows(SHEETS.NOTICES),
+        articles: readSheetRows(SHEETS.ARTICLES),
+        sliders: readSheetRows(SHEETS.SLIDERS),
+        gallery: readSheetRows(SHEETS.GALLERY),
+        messages: readSheetRows(SHEETS.MESSAGES),
+        config: readSheetRows(SHEETS.SITE_CONFIG),
+        logs: readSheetRows(SHEETS.ACTIVITY_LOG)
+      }
+    });
   } catch (err) {
-    return jsonResponse({ status: 'error', message: err.toString() });
+    return respondJson({ status: 'error', message: err.toString() });
   }
 }
 
 /**
- * POST রিকোয়েস্ট হ্যান্ডলার
+ * =========================================================================
+ * ২. POST রিকোয়েস্ট হ্যান্ডলার (One API Call to Sync All Data to Sheets)
+ * =========================================================================
  */
 function doPost(e) {
   try {
     var payload = {};
     if (e && e.postData && e.postData.contents) {
-      payload = JSON.parse(e.postData.contents);
+      try {
+        payload = JSON.parse(e.postData.contents);
+      } catch (ex) {
+        payload = e.parameter || {};
+      }
     } else if (e && e.parameter) {
       payload = e.parameter;
     }
 
-    var action = payload.action;
+    var action = payload.action || 'syncAllData';
 
-    if (action === 'syncAllData') {
-      if (payload.users && Array.isArray(payload.users)) {
-        overwriteSheet(SHEETS.USERS, [
+    if (action === 'syncAllData' || action === 'save_all') {
+      // Users
+      if (Array.isArray(payload.users)) {
+        overwriteSheetData(SHEETS.USERS, [
           'ID', 'Name', 'Email', 'PasswordHash', 'Phone', 'BloodGroup', 
-          'DOB', 'Address', 'District', 'AvatarUrl', 'LastDonation', 'Role', 'Status', 
+          'DOB', 'District', 'Address', 'AvatarUrl', 'LastDonation', 'Role', 'Status', 
           'IsAvailable', 'TotalDonations', 'CreatedAt'
         ], payload.users.map(function(u) {
           return [
-            u.id || '', u.name || '', u.email || '', u.passwordHash || '', u.phone || '', u.bloodGroup || '',
-            u.dob || '', u.address || '', u.district || '', u.avatarUrl || '', u.lastDonation || '', u.role || 'user', u.status || 'active',
+            u.id || '', u.name || '', u.email || '', u.passwordHash || '180665', u.phone || '', u.bloodGroup || '',
+            u.dob || '', u.district || 'নীলফামারী সদর', u.address || '', u.avatarUrl || '', u.lastDonation || '', u.role || 'user', u.status || 'active',
             u.isAvailableForDonation ? 'true' : 'false', u.totalDonationsCount || 0, u.createdAt || new Date().toISOString()
           ];
         }), '#8B0000');
       }
 
-      if (payload.requests && Array.isArray(payload.requests)) {
-        overwriteSheet(SHEETS.REQUESTS, [
+      // Requests
+      if (Array.isArray(payload.requests)) {
+        overwriteSheetData(SHEETS.REQUESTS, [
           'ID', 'RequesterName', 'Contact', 'AlternateContact', 'BloodGroup', 
           'Hospital', 'District', 'Urgency', 'UnitsNeeded', 'Status', 
           'PatientProblem', 'DateNeeded', 'AdminNote', 'CreatedAt'
         ], payload.requests.map(function(r) {
           return [
             r.id || '', r.requesterName || '', r.contact || '', r.alternateContact || '', r.bloodGroup || '',
-            r.hospital || '', r.district || '', r.urgency || '', r.unitsNeeded || 1, r.status || '',
+            r.hospital || '', r.district || '', r.urgency || '', r.unitsNeeded || 1, r.status || 'pending',
             r.patientProblem || '', r.donationDateNeeded || '', r.adminNote || '', r.createdAt || new Date().toISOString()
           ];
         }), '#B71C1C');
       }
 
-      if (payload.stock && Array.isArray(payload.stock)) {
-        overwriteSheet(SHEETS.BLOOD_STOCK, [
+      // BloodStock
+      if (Array.isArray(payload.stock)) {
+        overwriteSheetData(SHEETS.BLOOD_STOCK, [
           'BloodGroup', 'UnitCount', 'MinimumThreshold', 'LastUpdated'
         ], payload.stock.map(function(s) {
           return [
@@ -390,40 +438,90 @@ function doPost(e) {
         }), '#1E3A8A');
       }
 
-      logActivity('SYSTEM', 'SyncEngine', 'ওয়েবসাইট থেকে Google Sheets এ সম্পূর্ণ ডাটাবেজ সিঙ্ক হয়েছে');
+      // Applications
+      if (Array.isArray(payload.applications)) {
+        overwriteSheetData(SHEETS.APPLICATIONS, [
+          'ID', 'Type', 'ApplicantName', 'Email', 'Phone', 'District', 'Address', 'BloodGroup', 'Status', 'Details', 'CreatedAt'
+        ], payload.applications.map(function(a) {
+          return [
+            a.id || '', a.type || '', a.applicantName || '', a.email || '', a.phone || '', a.district || '', a.address || '', a.bloodGroup || '', a.status || 'pending', JSON.stringify(a.customFields || {}), a.createdAt || new Date().toISOString()
+          ];
+        }), '#4C1D95');
+      }
 
-      return jsonResponse({
+      // Notices
+      if (Array.isArray(payload.notices)) {
+        overwriteSheetData(SHEETS.NOTICES, [
+          'ID', 'Title', 'Category', 'CategoryLabel', 'Content', 'Date', 'PublishedBy', 'IsPinned', 'ExternalUrl', 'ExternalUrlText', 'CreatedAt'
+        ], payload.notices.map(function(n) {
+          return [
+            n.id || '', n.title || '', n.category || '', n.categoryLabel || '', n.content || '', n.date || '', n.publishedBy || '', n.isPinned ? 'true' : 'false', n.externalUrl || '', n.externalUrlText || '', n.createdAt || new Date().toISOString()
+          ];
+        }), '#D97706');
+      }
+
+      // Articles
+      if (Array.isArray(payload.articles)) {
+        overwriteSheetData(SHEETS.ARTICLES, [
+          'ID', 'Title', 'Category', 'Excerpt', 'Content', 'Author', 'AuthorRole', 'ImageUrl', 'YoutubeUrl', 'Date', 'ReadTime', 'Tags', 'ViewsCount', 'CreatedAt'
+        ], payload.articles.map(function(ar) {
+          return [
+            ar.id || '', ar.title || '', ar.category || '', ar.excerpt || '', ar.content || '', ar.author || '', ar.authorRole || '', ar.imageUrl || '', ar.youtubeUrl || '', ar.date || '', ar.readTime || '', (ar.tags || []).join(', '), ar.viewsCount || 0, ar.createdAt || new Date().toISOString()
+          ];
+        }), '#059669');
+      }
+
+      // Sliders
+      if (Array.isArray(payload.sliders)) {
+        overwriteSheetData(SHEETS.SLIDERS, [
+          'ID', 'Title', 'Subtitle', 'Badge', 'ImageUrl', 'LinkPage', 'LinkText', 'Order', 'IsActive'
+        ], payload.sliders.map(function(sl) {
+          return [
+            sl.id || '', sl.title || '', sl.subtitle || '', sl.badge || '', sl.imageUrl || '', sl.linkPage || '', sl.linkText || '', sl.order || 0, sl.isActive ? 'true' : 'false'
+          ];
+        }), '#2563EB');
+      }
+
+      // Gallery
+      if (Array.isArray(payload.gallery)) {
+        overwriteSheetData(SHEETS.GALLERY, [
+          'ID', 'Title', 'Category', 'ImageUrl', 'Date', 'Upazila', 'Description', 'CreatedAt'
+        ], payload.gallery.map(function(g) {
+          return [
+            g.id || '', g.title || '', g.category || '', g.imageUrl || '', g.date || '', g.upazila || '', g.description || '', g.createdAt || new Date().toISOString()
+          ];
+        }), '#7C3AED');
+      }
+
+      // Messages
+      if (Array.isArray(payload.messages)) {
+        overwriteSheetData(SHEETS.MESSAGES, [
+          'ID', 'Name', 'Email', 'Phone', 'Subject', 'Message', 'Status', 'CreatedAt'
+        ], payload.messages.map(function(m) {
+          return [
+            m.id || '', m.name || '', m.email || '', m.phone || '', m.subject || '', m.message || '', m.status || 'new', m.createdAt || new Date().toISOString()
+          ];
+        }), '#047857');
+      }
+
+      return respondJson({
         status: 'success',
-        message: 'গুগল স্প্রেডশিটে সফলভাবে সমস্ত তথ্য সংরক্ষিত হয়েছে!',
+        message: 'গুগল স্প্রেডশিটে সফলভাবে সমস্ত তথ্য সংরক্ষিত ও সিঙ্ক হয়েছে!',
         spreadsheetUrl: SPREADSHEET_URL,
         timestamp: new Date().toISOString()
       });
     }
 
-    return jsonResponse({ status: 'error', message: 'Action not handled: ' + action });
+    return respondJson({ status: 'error', message: 'Unknown action: ' + action });
   } catch (err) {
-    return jsonResponse({ status: 'error', message: err.toString() });
+    return respondJson({ status: 'error', message: err.toString() });
   }
 }
 
 /**
- * অ্যাক্টিভিটি লগ সংরক্ষণ
+ * JSON রেসপন্স প্রস্তুতকারক
  */
-function logActivity(userId, userName, action, details) {
-  try {
-    var ss = getTargetSpreadsheet();
-    var sheet = ss.getSheetByName(SHEETS.ACTIVITY_LOG) || setupsheet(SHEETS.ACTIVITY_LOG, ['ID', 'UserID', 'UserName', 'Action', 'Details', 'Timestamp', 'IP'], [], '#374151');
-    var logId = 'LOG-' + Math.floor(Math.random() * 90000 + 10000);
-    sheet.appendRow([
-      logId, userId || '', userName || '', action || '', details || '', new Date().toLocaleString('bn-BD'), 'GAS-Cloud'
-    ]);
-  } catch(e) {}
-}
-
-/**
- * JSON রেসপন্স
- */
-function jsonResponse(data) {
+function respondJson(data) {
   return ContentService.createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
 }
@@ -433,7 +531,7 @@ export const GOOGLE_SHEETS_SETUP_STEPS = [
   {
     step: 1,
     title: 'সংযুক্ত Google Sheets স্প্রেডশিট খুলুন',
-    description: 'ফিক্সড স্প্রেডশিট লিংকটি ওপেন করুন (ID: 15YbYI9ePTs2JtvvzhENv5ZelMIIf-OFQe3QAmuSfMJc)।'
+    description: 'নীলফামারী ব্লাড ডোনেশন সোসাইটির নির্ধারিত স্প্রেডশিট লিংকটি ওপেন করুন (ID: 15YbYI9ePTs2JtvvzhENv5ZelMIIf-OFQe3QAmuSfMJc)।'
   },
   {
     step: 2,
@@ -443,21 +541,21 @@ export const GOOGLE_SHEETS_SETUP_STEPS = [
   {
     step: 3,
     title: 'Code.gs পেস্ট করুন',
-    description: 'এডিটরের ডিফল্ট কোড মুছে দিয়ে অ্যাডমিন ড্যাশবোর্ডে দেওয়া সম্পূর্ণ Code.gs কপি করে পেস্ট করুন।'
+    description: 'এডিটরের ডিফল্ট কোড মুছে দিয়ে অ্যাডমিন ড্যাশবোর্ডে দেওয়া আপডেট কোড Code.gs এ পেস্ট করুন ও সংরক্ষণ করুন।'
   },
   {
     step: 4,
-    title: 'initialSetup() রান করুন',
-    description: 'উপরে ড্রপডাউন থেকে "initialSetup" অথবা "setupsheet" ফাংশন নির্বাচন করে "Run" এ ক্লিক করে একবার পারমিশন অনুমতি দিন।'
+    title: 'setupSheets() রান করুন',
+    description: 'ফাংশন ড্রপডাউন থেকে "setupSheets" নির্বাচন করে "Run" এ ক্লিক করুন। এক ক্লিকেই সমস্ত শিট ও হেডার তৈরি হয়ে যাবে।'
   },
   {
     step: 5,
     title: 'Web App হিসেবে ডিপ্লয় করুন',
-    description: 'Deploy > Manage deployments > Edit > New version দিয়ে Deploy করুন।'
+    description: 'Deploy > New deployment (বা Manage deployments) > Web app নির্বাচন করে Execute as: Me এবং Who has access: Anyone দিন।'
   },
   {
     step: 6,
-    title: 'ফিক্সড Web App URL প্রস্তুত',
-    description: 'আপনার নির্ধারিত Web App URL ইতিমধ্যে সিস্টেমে স্বয়ংক্রিয়ভাবে কানেক্টেড রয়েছে।'
+    title: 'স্বয়ংক্রিয় সিঙ্ক সচল',
+    description: 'Web App URL ড্যাশবোর্ডে সেট থাকলে ওয়েবসাইট প্রতি ১০ সেকেন্ড পরপর ব্যাকগ্রাউন্ডে স্বয়ংক্রিয়ভাবে ডাটা সিঙ্ক করবে।'
   }
 ];

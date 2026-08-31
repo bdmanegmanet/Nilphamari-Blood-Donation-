@@ -153,6 +153,28 @@ export interface FormQuestionField {
   helpText?: string;
 }
 
+export interface CustomFormField {
+  id: string;
+  label: string;
+  type: 'text' | 'tel' | 'email' | 'select' | 'textarea' | 'date' | 'number' | 'radio' | 'checkbox';
+  placeholder?: string;
+  required: boolean;
+  helperText?: string;
+  options?: string[];
+}
+
+export interface CustomFormConfig {
+  id: string;
+  title: string;
+  subtitle?: string;
+  badge?: string;
+  description?: string;
+  instructions?: string;
+  iconName?: string;
+  fields: CustomFormField[];
+  isActive?: boolean;
+}
+
 export interface ApplicationSectionConfig {
   volunteerNotice: string;
   campGuidelines: string;
@@ -170,6 +192,7 @@ export interface ApplicationSectionConfig {
   guidelines?: string[];
   emergencyDisclaimer?: string;
   customQuestions?: FormQuestionField[];
+  customForms?: CustomFormConfig[];
 }
 
 export interface SocialLinks {

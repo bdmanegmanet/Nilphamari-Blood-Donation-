@@ -770,3 +770,130 @@ export const INITIAL_ARTICLES: ArticleItem[] = [
   }
 ];
 
+export const INITIAL_CUSTOM_FORMS: any[] = [
+  {
+    id: 'volunteer',
+    title: 'স্বেচ্ছাসেবী হিসেবে নিবন্ধন',
+    subtitle: 'নীলফামারী ব্লাড ডোনেশন সোসাইটির সক্রিয় কর্মী হন',
+    badge: 'ভলান্টিয়ার টিম',
+    description: 'আমাদের রক্তদান ক্যাম্পেইন, জরুরি সাড়া প্রদান ও সচেতনতামূলক কর্মসূচিতে অংশগ্রহণ করুন।',
+    iconName: 'Users',
+    isActive: true,
+    fields: [
+      {
+        id: 'f_name',
+        label: 'আবেদনকারীর পুরো নাম',
+        type: 'text',
+        placeholder: 'আপনার পূর্ণ নাম লিখুন',
+        required: true,
+        helperText: 'জাতীয় পরিচয়পত্র বা শিক্ষাপ্রতিষ্ঠানের সনদ অনুযায়ী'
+      },
+      {
+        id: 'f_phone',
+        label: 'সক্রিয় মোবাইল নম্বর',
+        type: 'tel',
+        placeholder: '০১৭xxxxxxxx',
+        required: true,
+        helperText: 'জরুরি যোগাযোগের জন্য'
+      },
+      {
+        id: 'f_email',
+        label: 'ইমেইল ঠিকানা',
+        type: 'email',
+        placeholder: 'example@domain.com',
+        required: false,
+        helperText: 'সার্টিফিকেট ও নোটিশ প্রেরণের জন্য'
+      },
+      {
+        id: 'f_bg',
+        label: 'রক্তের গ্রুপ',
+        type: 'select',
+        required: true,
+        options: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+        helperText: 'আপনার জানা রক্তের গ্রুপ'
+      },
+      {
+        id: 'f_upazila',
+        label: 'উপজেলা নির্বাচন করুন',
+        type: 'select',
+        required: true,
+        options: NILPHAMARI_UPAZILAS,
+        helperText: 'আপনার বর্তমান বা স্থায়ী বসবাসের উপজেলা'
+      },
+      {
+        id: 'f_address',
+        label: 'বর্তমান ঠিকানা ও এলাকা',
+        type: 'text',
+        placeholder: 'গ্রাম / রোড / এলাকা',
+        required: true
+      },
+      {
+        id: 'f_reason',
+        label: 'স্বেচ্ছাসেবী হিসেবে কেন যুক্ত হতে চান?',
+        type: 'textarea',
+        placeholder: 'আপনার আগ্রহ ও পূর্ব অভিজ্ঞতার সংক্ষিপ্ত বিবরণ লিখুন',
+        required: false
+      }
+    ]
+  },
+  {
+    id: 'blood_camp',
+    title: 'ব্লাড ক্যাম্প আয়োজন আবেদন',
+    subtitle: 'শিক্ষা প্রতিষ্ঠান, ক্লাব বা এলাকায় রক্তদান ক্যাম্প',
+    badge: 'ক্যাম্পেইন রিকোয়েস্ট',
+    description: 'আপনার প্রতিষ্ঠান বা এলাকায় বিনামূল্যে ব্লাড গ্রুপিং ও স্বেচ্ছায় রক্তদান ক্যাম্পের আয়োজন করতে আবেদন করুন।',
+    iconName: 'Building2',
+    isActive: true,
+    fields: [
+      {
+        id: 'c_org',
+        label: 'প্রতিষ্ঠানের বা সংগঠনের নাম',
+        type: 'text',
+        placeholder: 'স্কুল, কলেজ, মাদ্রাসা, ক্লাব বা যুব সংগঠন',
+        required: true
+      },
+      {
+        id: 'c_rep',
+        label: 'দায়িত্বপ্রাপ্ত ব্যক্তির নাম',
+        type: 'text',
+        placeholder: 'আহ্বায়ক / সাধারণ সম্পাদক / সমন্বয়ক',
+        required: true
+      },
+      {
+        id: 'c_phone',
+        label: 'জরুরি মোবাইল নম্বর',
+        type: 'tel',
+        placeholder: '০১৭xxxxxxxx',
+        required: true
+      },
+      {
+        id: 'c_upazila',
+        label: 'ক্যাম্পের প্রস্তাবিত উপজেলা',
+        type: 'select',
+        required: true,
+        options: NILPHAMARI_UPAZILAS
+      },
+      {
+        id: 'c_venue',
+        label: 'ক্যাম্পের সঠিক স্থান / ভেন্যু',
+        type: 'text',
+        placeholder: 'অডিটোরিয়াম, মাঠ বা নির্দিষ্ট কক্ষ',
+        required: true
+      },
+      {
+        id: 'c_date',
+        label: 'প্রস্তাবিত তারিখ',
+        type: 'date',
+        required: true
+      },
+      {
+        id: 'c_donors',
+        label: 'সম্ভাব্য রক্তদাতার সংখ্যা',
+        type: 'number',
+        placeholder: 'আনুমানিক কতজন রক্ত দিতে পারেন (যেমন: ৫০)',
+        required: false
+      }
+    ]
+  }
+];
+
